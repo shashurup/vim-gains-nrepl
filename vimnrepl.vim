@@ -6,12 +6,27 @@ endif
 python << EOF
 
 import nrepl
+import os.path
+
+def detect_project_repl_port():
+  port_files = ['target/repl-port', 'target/repl/repl-port', '.nrepl-port']
+  for pf in port_files:
+    if os.path.exists(pf):
+      with open(pf, 'r') as f:
+        return int(f.read().strip())
 
 conn = None
 
-def connect(url):
+def connect(url = None):
   global conn
-  conn = nrepl.connect(url)
+  if url:
+    conn = nrepl.connect(url)
+  else:
+    port = detect_project_repl_port()
+    if port:
+      connect('nrepl://localhost:%s' % (port))
+    else:
+      print >>sys.stderr, 'Project repl has not been found, please specify an url'
 
 def interact(msg):
   global conn
@@ -27,7 +42,7 @@ def interact(msg):
 
 def eval(code):
   result = []
-  for msg in interact({"op": "eval", "code": code}):
+  for msg in interact({'op': 'eval', 'code': code}):
     if 'out' in msg:
       print(msg['out'])
     if 'err' in msg:
