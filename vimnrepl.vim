@@ -15,12 +15,14 @@ def detect_project_repl_port():
       with open(pf, 'r') as f:
         return int(f.read().strip())
 
-conn = None
+nrepl_conn = None
 
 def connect(url = None):
-  global conn
+  global nrepl_conn
+  if nrepl_conn:
+    nrepl_conn.close()
   if url:
-    conn = nrepl.connect(url)
+    nrepl_conn = nrepl.connect(url)
   else:
     port = detect_project_repl_port()
     if port:
@@ -29,12 +31,14 @@ def connect(url = None):
       print >>sys.stderr, 'Project repl has not been found, please specify an url'
 
 def interact(msg):
-  global conn
-  conn.write(msg)
+  global nrepl_conn
+  if not nrepl_conn:
+    connect()
+  nrepl_conn.write(msg)
   done = None
   result = []
   while not done:
-    msg = conn.read()
+    msg = nrepl_conn.read()
     if msg:
       result.append(msg)
       done = 'status' in msg and 'done' in msg['status']
@@ -49,7 +53,6 @@ def eval(code):
       print >>sys.stderr, msg['err']
     if 'value' in msg:
       result.append(msg['value'])
-  if result:
-    return result if len(result) > 1 else result[0]
+  return result
 
 EOF
