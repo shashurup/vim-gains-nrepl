@@ -55,4 +55,27 @@ def eval(code):
       result.append(msg['value'])
   return result
 
+def print_list(list):
+  for item in list:
+    print(item)
+
 EOF
+
+function! s:NREval(code) range
+python << EOF
+import vim
+code = vim.eval('a:code')
+if code:
+  print_list(eval(code))
+else:
+  first = int(vim.eval('a:firstline'))
+  last = int(vim.eval('a:lastline'))
+  if first == 1 and last == len(vim.current.buffer):
+    print "whole file"
+  else:
+    print_list(eval('\n'.join(vim.current.buffer[first - 1:last])))
+EOF
+endfunction
+
+command! -nargs=? -range NREval <line1>,<line2>call s:NREval(<q-args>)
+command! NREvalVisual call s:NREval(@*)
