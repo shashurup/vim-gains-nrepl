@@ -16,11 +16,13 @@ def detect_project_repl_port():
         return int(f.read().strip())
 
 nrepl_conn = None
+nrepl_ns = None
 
 def connect(url = None):
-  global nrepl_conn
+  global nrepl_conn, nrepl_ns
   if nrepl_conn:
     nrepl_conn.close()
+  nrepl_ns = None
   if url:
     nrepl_conn = nrepl.connect(url)
   else:
@@ -37,9 +39,11 @@ def disconnect():
     nrepl_conn = None
 
 def interact(msg):
-  global nrepl_conn
+  global nrepl_conn, nrepl_ns
   if not nrepl_conn:
     connect()
+  if nrepl_ns:
+    msg['ns'] = nrepl_ns
   nrepl_conn.write(msg)
   done = None
   result = []
@@ -52,7 +56,10 @@ def interact(msg):
 
 def handle_response(response):
   result = []
+  global nrepl_ns
   for msg in response:
+    if 'ns' in msg:
+      nrepl_ns = msg['ns']
     if 'out' in msg:
       print(msg['out'])
     if 'err' in msg:
@@ -88,7 +95,9 @@ else:
   first = int(vim.eval('a:firstline'))
   last = int(vim.eval('a:lastline'))
   if first == 1 and last == len(vim.current.buffer):
-    print_list(load('\n'.join(vim.current.buffer[:])))
+    name = vim.eval("expand('%:t')")
+    path = vim.eval("expand('%:p')")
+    print_list(load('\n'.join(vim.current.buffer[:]), name, path))
   else:
     print_list(eval('\n'.join(vim.current.buffer[first - 1:last])))
 EOF
