@@ -45,14 +45,15 @@ def interact(msg):
   result = []
   while not done:
     msg = nrepl_conn.read()
+    print "got message", msg
     if msg:
       result.append(msg)
       done = 'status' in msg and 'done' in msg['status']
   return result
 
-def eval(code):
+def handle_response(response):
   result = []
-  for msg in interact({'op': 'eval', 'code': code}):
+  for msg in response:
     if 'out' in msg:
       print(msg['out'])
     if 'err' in msg:
@@ -60,6 +61,17 @@ def eval(code):
     if 'value' in msg:
       result.append(msg['value'])
   return result
+
+def eval(code):
+  return handle_response(interact({'op': 'eval', 'code': code}))
+
+def load(file, name = None, path = None):
+  msg = {'file': file}
+  if name:
+    msg['file-name'] = name
+  if path:
+    msg['file-path'] = path
+  return handle_response(interact(msg))
 
 def print_list(list):
   for item in list:
@@ -77,7 +89,7 @@ else:
   first = int(vim.eval('a:firstline'))
   last = int(vim.eval('a:lastline'))
   if first == 1 and last == len(vim.current.buffer):
-    print "whole file"
+    print_list(load('\n'.join(vim.current.buffer[:])))
   else:
     print_list(eval('\n'.join(vim.current.buffer[first - 1:last])))
 EOF
