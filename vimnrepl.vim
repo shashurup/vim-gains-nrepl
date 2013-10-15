@@ -16,15 +16,16 @@ def detect_project_repl_port():
         return int(f.read().strip())
 
 nrepl_conn = None
-nrepl_ns = None
+nrepl_session = None
 
 def connect(url = None):
-  global nrepl_conn, nrepl_ns
+  global nrepl_conn, nrepl_session
   if nrepl_conn:
     nrepl_conn.close()
-  nrepl_ns = None
+  nrepl_session = None
   if url:
     nrepl_conn = nrepl.connect(url)
+    handle_response(interact({'op': 'clone'}))
   else:
     port = detect_project_repl_port()
     if port:
@@ -39,11 +40,11 @@ def disconnect():
     nrepl_conn = None
 
 def interact(msg):
-  global nrepl_conn, nrepl_ns
+  global nrepl_conn, nrepl_session
   if not nrepl_conn:
     connect()
-  if nrepl_ns:
-    msg['ns'] = nrepl_ns
+  if nrepl_session:
+    msg['session'] = nrepl_session
   nrepl_conn.write(msg)
   done = None
   result = []
@@ -56,10 +57,10 @@ def interact(msg):
 
 def handle_response(response):
   result = []
-  global nrepl_ns
+  global nrepl_session
   for msg in response:
-    if 'ns' in msg:
-      nrepl_ns = msg['ns']
+    if 'new-session' in msg:
+      nrepl_session = msg['new-session']
     if 'out' in msg:
       print(msg['out'])
     if 'err' in msg:
