@@ -30,6 +30,12 @@ def connect(url = None):
     else:
       print >>sys.stderr, 'Project repl has not been found, please specify an url'
 
+def disconnect():
+  global nrepl_conn
+  if nrepl_conn:
+    nrepl_conn.close()
+    nrepl_conn = None
+
 def interact(msg):
   global nrepl_conn
   if not nrepl_conn:
@@ -61,7 +67,7 @@ def print_list(list):
 
 EOF
 
-function! s:NREval(code) range
+function! NreplEval(code) range
 python << EOF
 import vim
 code = vim.eval('a:code')
@@ -77,5 +83,15 @@ else:
 EOF
 endfunction
 
-command! -nargs=? -range NREval <line1>,<line2>call s:NREval(<q-args>)
-command! NREvalVisual call s:NREval(@*)
+command! -nargs=? NreplConnect py connect(<q-args>)
+command! NreplDisconnect py disconnect()
+command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
+
+" Sample mappings
+nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
+vnoremap <silent> ;e :call NreplEval(@*)<CR>
+
+nmap <silent> ;d viw:call NreplEval('(doc '.@*.')')<CR>
+nmap <silent> ;s viw:call NreplEval('(source '.@*.')')<CR>
+nmap <silent> ;m va(:call NreplEval('(macroexpand '''.@*.')')<CR>
+vnoremap <silent> ;m :call NreplEval('(macroexpand '''.@*.')')<CR>
