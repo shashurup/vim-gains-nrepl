@@ -45,7 +45,6 @@ def interact(msg):
   result = []
   while not done:
     msg = nrepl_conn.read()
-    print "got message", msg
     if msg:
       result.append(msg)
       done = 'status' in msg and 'done' in msg['status']
@@ -66,7 +65,7 @@ def eval(code):
   return handle_response(interact({'op': 'eval', 'code': code}))
 
 def load(file, name = None, path = None):
-  msg = {'file': file}
+  msg = {'op': 'load-file', 'file': file}
   if name:
     msg['file-name'] = name
   if path:
