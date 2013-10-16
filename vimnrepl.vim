@@ -43,50 +43,26 @@ def create_session(scheme, host, port):
     sess_list.add(session)
     return conn, session
 
-def find_connection(scheme, host, port, session):
-    conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
-    if conn and session in sess_list:
-        return conn
-
-def get_or_create_session(session_url):
-    scheme, host, port, session = split_session_url(session_url)
-    if session:
-        if not find_connection(scheme, host, port, session):
-            return None
-    else:
-        conn, session = create_session(scheme, host, port)
-    return join_session_url((scheme, host, port, session))
-
-def project_repl_url():
+def project_repl():
     port = detect_project_repl_port()
     if port:
-        return "nrepl://localhost:%s" % (port)
+        conn, session = create_session('repl', 'localhost', port)
+        return conn, session, join_session_url(('repl', 'localhost', port, session))
+    return None, None, None
 
-def assign_session_to_current_buffer(session_url):
-    scheme, host, port, session = split_session_url(session_url)
-    if session:
-        if not find_connection(scheme, host, port, session):
-            raise Exception('session %s is not found' % (session_url))
-    else:
-        conn, session = create_session(scheme, host, port)
-    vim.current.buffer.vars['nrepl_session_url'] = join_session_url((scheme, host, port, session))
-    return conn, session
-
-def get_or_create_current_buffer_session():
-    session_url = vim.current.buffer.vars.get('nrepl_session_url')
-    if session_url:
-        scheme, host, port, session = split_session_url(session_url)
-        conn = find_connection(scheme, host, port, session)
-        if not conn:
-            raise Exception('session %s is not found' % (session_url))
+def find_session(url):
+    scheme, host, port, session = split_session_url(url)
+    conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
+    if conn and session in sess_list:
         return conn, session
-    port = detect_project_repl_port()
-    if not port:
-        print >>sys.stderr, 'Project repl has not been found'
-    return assign_session_to_current_buffer("nrepl://localhost:%s" % (port))
+    return None, None
+
+def session_exists(scheme, host, port, session):
+    conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
+    return conn and session in sess_list
 
 def close_session(url):
-    scheme, host, port, session = split_session_url(session_url)
+    scheme, host, port, session = split_session_url(url)
     if session:
         conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
         if conn:
@@ -112,11 +88,13 @@ python << EOF
 import vim
 url = vim.eval('a:url')
 if url:
-    session_url = get_or_create_session(url)
-    if session_url:
-        vim.current.buffer.vars['nrepl_session_url'] = session_url
+    scheme, host, port, session = split_session_url(url)
+    if not session:
+        c, session = create_session(scheme, host, port)
+    if session_exists(scheme, host, port, session):
+        vim.current.buffer.vars['nrepl_session_url'] = join_session_url((scheme, host, port, session))
     else:
-        print >>sys.stderr, 'Session %s is not found' % (session_url)
+        print >>sys.stderr, 'Session %s does not exist' % (url)
 print vim.current.buffer.vars.get('nrepl_session_url')
 EOF
 endfunction
@@ -143,21 +121,33 @@ endfunction
 function! NreplEval(code) range
 python << EOF
 import vim
-code = vim.eval('a:code')
-conn, session = get_or_create_current_buffer_session()
-if code:
-    print_response(nrepl.eval(conn, code, session))
-else:
-    first = int(vim.eval('a:firstline'))
-    last = int(vim.eval('a:lastline'))
-    if first == 1 and last == len(vim.current.buffer):
-        name = vim.eval("expand('%:t')")
-        path = vim.eval("expand('%:p')")
-        code = '\n'.join(vim.current.buffer[:])
-        print_response(nrepl.load_file(conn, code, path, name, session))
+conn, session = None, None
+session_url = vim.current.buffer.vars.get('nrepl_session_url')
+if not session_url:
+    conn, session, session_url = project_repl()
+    if conn:
+        vim.current.buffer.vars['nrepl_session_url'] = session_url
     else:
-        code = '\n'.join(vim.current.buffer[first - 1:last])
+        print >>sys.stderr, 'Project repl has not been found'
+else:
+    conn, session = find_session(session_url)
+    if not conn:
+        print >>sys.stderr, 'Session %s does not exist' % (session_url)
+code = vim.eval('a:code')
+if conn:
+    if code:
         print_response(nrepl.eval(conn, code, session))
+    else:
+        first = int(vim.eval('a:firstline'))
+        last = int(vim.eval('a:lastline'))
+        if first == 1 and last == len(vim.current.buffer):
+            name = vim.eval("expand('%:t')")
+            path = vim.eval("expand('%:p')")
+            code = '\n'.join(vim.current.buffer[:])
+            print_response(nrepl.load_file(conn, code, path, name, session))
+        else:
+            code = '\n'.join(vim.current.buffer[first - 1:last])
+            print_response(nrepl.eval(conn, code, session))
 EOF
 endfunction
 
