@@ -71,6 +71,17 @@ def get_or_create_current_buffer_session():
         print >>sys.stderr, 'Project repl has not been found'
     return assign_session_to_current_buffer("nrepl://localhost:%s" % (port))
 
+def close_session(url):
+    scheme, host, port, session = split_session_url(session_url)
+    if session:
+        conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
+        if conn:
+            nrepl.close_session(conn, session)
+            sess_list.remove(session)
+            if not len(sess_list):
+                nrepl.disconnect(conn)
+                del nrepl_connections[(scheme, host, port)]
+
 def print_response(response):
   for msg in response:
     if 'out' in msg:
@@ -99,6 +110,18 @@ for session_url in map(join_session_url, get_sessions(nrepl_connections)):
 EOF
 endfunction
 
+function! NreplCloseSession(url)
+python << EOF
+import vim
+url = vim.eval('a:url')
+if not url:
+    url = vim.current.buffer.vars.get('nrepl_session_url')
+if url:
+    close_session(url)
+vim.current.buffer.vars['nrepl_session_url'] = ''
+EOF
+endfunction
+
 function! NreplEval(code) range
 python << EOF
 import vim
@@ -122,6 +145,7 @@ endfunction
 
 command! -nargs=? NreplSession call NreplSession(<q-args>)
 command! NreplListSessions call NreplListSessions()
+command! -nargs=? NreplCloseSession call NreplCloseSession(<q-args>)
 command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
 
 " Sample mappings
