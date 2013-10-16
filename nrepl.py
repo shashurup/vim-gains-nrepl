@@ -106,6 +106,10 @@ def _write_datum(x, out):
         out.write("e")
     out.flush()
 
+def _merge_optional(d, options):
+    for k, v in options.iteritems():
+        if v:
+            d[k] = v
 
 def connect(port, host = 'localhost', scheme = 'nrepl'):
     s = socket.create_connection((host, port))
@@ -114,14 +118,38 @@ def connect(port, host = 'localhost', scheme = 'nrepl'):
 def disconnect(connection):
     connection.close()
 
-def perform(request):
-    pass
+def send(connection, request):
+    _write_datum(request, connection)
+    done = None
+    result = []
+    while not done:
+        msg = _read_datum(connection)
+        result.append(msg)
+        status = msg.get('status')
+        if status:
+            done = 'done' in status or 'error' in status
+    return result
 
 def open_session(connection):
-    pass
+    return clone_session(connection, None)
 
 def clone_session(connection, session):
-    pass
+    request = {'op': 'clone'}
+    _merge_optional(request, {'session': session})
+    for msg in send(connection, request):
+        if 'new-session' in msg:
+            return msg['new-session']
+    
 
-def close_session(session):
-    pass
+def close_session(connection, session):
+    return send(connection, {'op': 'close', 'session': session})
+
+def eval(connection, code, session = None):
+    request = {'op': 'eval', 'code': code}
+    _merge_optional(request, {'session': session})
+    return send(connection, request)
+
+def load_file(connection, content, path = None, name = None, session = None):
+    request = {'op': 'load-file', 'file': content}
+    _merge_optional(request, {'session': session, 'file-path': path, 'file-name': name})
+    return send(connection, request)
