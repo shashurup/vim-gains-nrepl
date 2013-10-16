@@ -71,7 +71,6 @@ def close_session(url):
         conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
         if conn:
             nrepl.close_session(conn, session)
-            print 'Closed', url
             sess_list.remove(session)
             if not len(sess_list):
                 nrepl.disconnect(conn)
@@ -121,6 +120,7 @@ if not url:
     url = vim.current.buffer.vars.get('nrepl_session_url')
 if url:
     close_session(url)
+    print 'Closed', url
 vim.current.buffer.vars['nrepl_session_url'] = ''
 EOF
 endfunction
@@ -131,6 +131,7 @@ buf_map = get_buffer_map()
 for session_url in list(get_sessions(nrepl_connections)):
     if not session_url in buf_map:
         close_session(session_url)
+        print 'Closed', session_url
 EOF
 endfunction
 
