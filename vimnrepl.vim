@@ -48,6 +48,15 @@ def find_connection(scheme, host, port, session):
     if conn and session in sess_list:
         return conn
 
+def get_or_create_session(session_url):
+    scheme, host, port, session = split_session_url(session_url)
+    if session:
+        if not find_connection(scheme, host, port, session):
+            return None
+    else:
+        conn, session = create_session(scheme, host, port)
+    return join_session_url((scheme, host, port, session))
+
 def assign_session_to_current_buffer(session_url):
     scheme, host, port, session = split_session_url(session_url)
     if session:
@@ -96,9 +105,13 @@ EOF
 function! NreplSession(url)
 python << EOF
 import vim
-session_url = vim.eval('a:url')
-if session_url:
-    assign_session_to_current_buffer(session_url)
+url = vim.eval('a:url')
+if url:
+    session_url = get_or_create_session(url)
+    if session_url:
+        vim.current.buffer.vars['nrepl_session_url'] = session_url
+    else:
+        print >>sys.stderr, 'Session %s is not found' % (session_url)
 print vim.current.buffer.vars.get('nrepl_session_url')
 EOF
 endfunction
