@@ -57,6 +57,11 @@ def get_or_create_session(session_url):
         conn, session = create_session(scheme, host, port)
     return join_session_url((scheme, host, port, session))
 
+def project_repl_url():
+    port = detect_project_repl_port()
+    if port:
+        return "nrepl://localhost:%s" % (port)
+
 def assign_session_to_current_buffer(session_url):
     scheme, host, port, session = split_session_url(session_url)
     if session:
