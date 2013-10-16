@@ -31,7 +31,11 @@ def join_session_url(components):
 def get_sessions(connections):
     for (scheme, host, port), (conn, sess_list) in connections.iteritems():
         for session in sess_list:
-            yield (scheme, host, port, session)
+            yield join_session_url((scheme, host, port, session))
+
+def get_buffer_map():
+    return {buf.vars['nrepl_session_url']: buf.name
+                for buf in vim.buffers if buf.vars.get('nrepl_session_url')}
 
 def create_session(scheme, host, port):
     conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
@@ -67,6 +71,7 @@ def close_session(url):
         conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
         if conn:
             nrepl.close_session(conn, session)
+            print 'Closed', url
             sess_list.remove(session)
             if not len(sess_list):
                 nrepl.disconnect(conn)
@@ -101,8 +106,10 @@ endfunction
 
 function! NreplListSessions()
 python << EOF
-for session_url in map(join_session_url, get_sessions(nrepl_connections)):
-    print session_url
+buf_map = get_buffer_map()
+for session_url in get_sessions(nrepl_connections):
+    buf_name = buf_map.get(session_url, '')
+    print session_url, buf_name
 EOF
 endfunction
 
@@ -115,6 +122,15 @@ if not url:
 if url:
     close_session(url)
 vim.current.buffer.vars['nrepl_session_url'] = ''
+EOF
+endfunction
+
+function! NreplCollectGarbage()
+python << EOF
+buf_map = get_buffer_map()
+for session_url in list(get_sessions(nrepl_connections)):
+    if not session_url in buf_map:
+        close_session(session_url)
 EOF
 endfunction
 
