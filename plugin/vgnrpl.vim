@@ -58,12 +58,3 @@ command! -nargs=? NreplSession call NreplSession(<q-args>)
 command! NreplListSessions call NreplListSessions()
 command! -nargs=? NreplClearSession call NreplClearSession(<q-args>)
 command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
-
-" Sample mappings
-nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
-vnoremap <silent> ;e :call NreplEval(@*)<CR>
-
-nmap <silent> ;d viw:call NreplEval('(clojure.repl/doc '.@*.')')<CR>
-nmap <silent> ;s viw:call NreplEval('(clojure.repl/source '.@*.')')<CR>
-nmap <silent> ;m va(:call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
-vnoremap <silent> ;m :call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
