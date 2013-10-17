@@ -1,7 +1,16 @@
+" Vim global plugin for nrepl integration
+" Maintainer: Georgy Kibardin <george-kibardin@yandex.ru>
+" License: MIT
+
 if !has('python')
     echo "Error: Required vim compiled with +python"
     finish
 endif
+
+if exists('g:vgnrpl_loaded')
+  finish
+endif
+let g:vgnrpl_loaded = 1
 
 python << EOF
 import vim
@@ -54,7 +63,7 @@ command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
 nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
 vnoremap <silent> ;e :call NreplEval(@*)<CR>
 
-nmap <silent> ;d viw:call NreplEval('(doc '.@*.')')<CR>
-nmap <silent> ;s viw:call NreplEval('(source '.@*.')')<CR>
-nmap <silent> ;m va(:call NreplEval('(macroexpand '''.@*.')')<CR>
-vnoremap <silent> ;m :call NreplEval('(macroexpand '''.@*.')')<CR>
+nmap <silent> ;d viw:call NreplEval('(clojure.repl/doc '.@*.')')<CR>
+nmap <silent> ;s viw:call NreplEval('(clojure.repl/source '.@*.')')<CR>
+nmap <silent> ;m va(:call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
+vnoremap <silent> ;m :call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
