@@ -21,6 +21,12 @@ vgnrpl.print_sessions()
 EOF
 endfunction
 
+function! NreplClearSession()
+python << EOF
+vgnrpl.clear_buffer_session()
+EOF
+endfunction
+
 function! NreplCloseSession(url)
 python << EOF
 vgnrpl.close_buffer_session(vim.eval('a:url'))
@@ -41,7 +47,7 @@ endfunction
 
 command! -nargs=? NreplSession call NreplSession(<q-args>)
 command! NreplListSessions call NreplListSessions()
-command! -nargs=? NreplCloseSession call NreplCloseSession(<q-args>)
+command! NreplClearSession call NreplClearSession()
 command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
 
 " Sample mappings

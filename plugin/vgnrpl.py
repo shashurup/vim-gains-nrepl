@@ -98,21 +98,18 @@ def print_sessions():
         buf_name = buf_map.get(session_url, '')
         print session_url, buf_name
 
-def close_buffer_session(url):
-    if not url:
-        url = vim.current.buffer.vars.get('nrepl_session_url')
-        if url:
-            del vim.current.buffer.vars['nrepl_session_url']
-    if url:
-        close_session(url)
-        print 'Closed', url
-
 def collect_garbage():
     buf_map = get_buffer_map()
     for session_url in list(get_sessions(nrepl_connections)):
         if not session_url in buf_map:
             close_session(session_url)
             print 'Closed', session_url
+
+def clear_buffer_session():
+    url = vim.current.buffer.vars.get('nrepl_session_url')
+    if url:
+        del vim.current.buffer.vars['nrepl_session_url']
+        collect_garbage()
 
 def eval(code, first, last):
     conn, session = None, None
