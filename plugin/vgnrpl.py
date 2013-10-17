@@ -84,6 +84,10 @@ def print_response(response):
         if 'value' in msg:
             print msg['value']
 
+def attach_session_url(buf, session_url):
+    buf.vars['nrepl_session_url'] = session_url
+    vim.command('au BufDelete <buffer> NreplClearSession %s' % (buf.number))
+
 def set_buffer_session(url):
     if url:
         scheme, host, port, session = split_session_url(url)
@@ -93,7 +97,8 @@ def set_buffer_session(url):
                 return
         else:
             c, session = create_session(scheme, host, port)
-        vim.current.buffer.vars['nrepl_session_url'] = join_session_url((scheme, host, port, session))
+        attach_session_url(vim.current.buffer,
+                join_session_url((scheme, host, port, session)))
     print vim.current.buffer.vars.get('nrepl_session_url')
 
 def print_sessions():
@@ -109,10 +114,13 @@ def collect_garbage():
             close_session(session_url)
             print 'Closed', session_url
 
-def clear_buffer_session():
-    url = vim.current.buffer.vars.get('nrepl_session_url')
+def clear_buffer_session(buf):
+    vars = vim.current.buffer.vars
+    if buf:
+        vars = vim.buffers[int(buf)].vars
+    url = vars.get('nrepl_session_url')
     if url:
-        del vim.current.buffer.vars['nrepl_session_url']
+        del vars['nrepl_session_url']
         collect_garbage()
 
 def eval(code, first, last):
@@ -121,7 +129,7 @@ def eval(code, first, last):
     if not session_url:
         conn, session, session_url = project_repl()
         if conn:
-            vim.current.buffer.vars['nrepl_session_url'] = session_url
+            attach_session_url(vim.current.buffer, session_url)
         else:
             print >>sys.stderr, 'Project repl has not been found'
     else:
