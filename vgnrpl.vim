@@ -121,7 +121,7 @@ if not url:
 if url:
     close_session(url)
     print 'Closed', url
-vim.current.buffer.vars['nrepl_session_url'] = ''
+del vim.current.buffer.vars['nrepl_session_url']
 EOF
 endfunction
 
