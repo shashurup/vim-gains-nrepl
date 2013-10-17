@@ -29,8 +29,12 @@ def get_sessions(connections):
             yield join_session_url((scheme, host, port, session))
 
 def get_buffer_map():
-    return {buf.vars['nrepl_session_url']: buf.name
-                for buf in vim.buffers if buf.vars.get('nrepl_session_url')}
+    result = {}
+    for buf in vim.buffers:
+        session_url = buf.vars.get('nrepl_session_url')
+        if session_url:
+            result.setdefault(session_url, []).append(buf.name)
+    return result
 
 def create_session(scheme, host, port):
     conn, sess_list = nrepl_connections.get((scheme, host, port), (None, None))
@@ -95,8 +99,8 @@ def set_buffer_session(url):
 def print_sessions():
     buf_map = get_buffer_map()
     for session_url in get_sessions(nrepl_connections):
-        buf_name = buf_map.get(session_url, '')
-        print session_url, buf_name
+        buf_names = buf_map.get(session_url, [])
+        print session_url, ', '.join(buf_names)
 
 def collect_garbage():
     buf_map = get_buffer_map()
