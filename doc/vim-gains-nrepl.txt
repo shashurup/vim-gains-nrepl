@@ -16,62 +16,60 @@ buffer.
 COMMANDS
 
 :[range]NreplEval [<expr>]
-
-Evals current line, range or supplied expression. Automatically connects to
-local lein repl if necessary. It is smart enough to recognize :%NreplEval and
-issues nREPL load-file operation so that all functions have file name and line
-numbers associated.
+                        Evals current line, range or supplied expression.
+                        Automatically connects to local lein repl if
+                        necessary. It is smart enough to recognize :%NreplEval
+                        and issues nREPL load-file operation so that all
+                        functions have file name and line numbers associated.
                         
-Note that it doesn't do any trick to figure and set a namespace for the
-current buffer before eval - you need to do it yourself. However, there are
-also good news - you only need to do this once - each buffer has its own
-session and other buffers don't affect the namespace selected.
+                        Note that it doesn't do any trick to figure and set a
+                        namespace for the current buffer before eval - you
+                        need to do it yourself. However, there are also good
+                        news - you only need to do this once - each buffer has
+                        its own session and other buffers don't affect the
+                        namespace selected.
+  
+:NreplSession [<url>]   This form:
 
-:NreplSession [<url>]
+                                :NreplSession nrepl://<host>:<port>
 
-This form:
+                        connects (if necessary) to a repl server, creates new
+                        session and associates it with current buffer.
 
-        :NreplSession nrepl://<host>:<port>
+                                :NreplSession nrepl://<host>:<port>/<session>
 
-connects (if necessary) to a repl server, creates new session and associates
-it with current buffer.
+                        associates current buffer with existing session, thus
+                        two buffers may share the same session.
 
-        :NreplSession nrepl://<host>:<port>/<session>
+                                :NreplSession
 
-associates current buffer with existing session, thus two buffers may share
-the same session.
+                        shows the session (if any) associated with the current
+                        buffer.
 
-        :NreplSession
+:NreplListSessions      Lists active sessions and associated buffers.
 
-shows the session (if any) associated with the current buffer.
-
-:NreplListSessions
-
-Lists active sessions and associated buffers.
-
-:NreplClearSession
-
-You don't need to use this normally - this command is executed automatically
-when a buffer is deleted. It just "unlinks" session from the current buffer.
-All sessions which are not associated with any buffer get garbage collected
-after this command is executed.
+:NreplClearSession      You don't need to use this normally - this command is
+                        executed automatically when a buffer is deleted. It
+                        just "unlinks" session from the current buffer. All
+                        sessions which are not associated with any buffer get
+                        garbage collected after this command is executed.
 
 MAPPINGS
 
 I haven't provided any default mappings intentionally. It is hard to provide
-sane mappings which would fit to any workflow. For instance, mine depend on
+sane mappings which would fit to any workflow. For instance, mine depends on
 paredit plugin I use with clojure. I have the following in my .vimrc:
 
-" Evals current top level form with help of paredit's [[
-nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
-" Evals visual selection
-vnoremap <silent> ;e :call NreplEval(@*)<CR>
-" Misc helper mappings for a word under cursor
-nmap <silent> ;d viw:call NreplEval('(clojure.repl/doc '.@*.')')<CR>
-nmap <silent> ;s viw:call NreplEval('(clojure.repl/source '.@*.')')<CR>
-" Macroexpands innermost form
-nmap <silent> ;m va(:call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
-" and visual selection
-vnoremap <silent> ;m :call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
+        " Evals current top level form with help of paredit's [[
+        nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
+        " Evals visual selection
+        vnoremap <silent> ;e :call NreplEval(@*)<CR>
+        " Misc helper mappings for a word under cursor
+        nmap <silent> ;d viw:call NreplEval('(clojure.repl/doc '.@*.')')<CR>
+        nmap <silent> ;s viw:call NreplEval('(clojure.repl/source '.@*.')')<CR>
+        " Macroexpands innermost form
+        nmap <silent> ;m va(:call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
+        " and visual selection
+        vnoremap <silent> ;m :call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
 
  vim:tw=78:ts=8:ft=help:norl:
