@@ -61,7 +61,7 @@ sane mappings which would fit to any workflow. For instance, mine depends on
 paredit plugin I use with clojure. I have the following in my .vimrc:
 
         " Evals current top level form with help of paredit's [[
-        nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
+        nmap <silent> ;e )[[va(:call NreplEval(@*)<CR>
         " Evals visual selection
         vnoremap <silent> ;e :call NreplEval(@*)<CR>
         " Misc helper mappings for a word under cursor
