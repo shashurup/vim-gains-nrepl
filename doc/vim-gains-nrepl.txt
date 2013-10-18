@@ -4,19 +4,28 @@ With this simple plugin Vim gains ability to talk to nREPL
 
 GETTING STARTED
 
-You don't need to do anything if you have lein repl started in the current directory, just issue :NreplEval <expr> and the plugin connects automatically. To connect explicitly use:
+You don't need to do anything if you have lein repl started in the current
+directory, just issue :NreplEval <expr> and the plugin connects automatically.
+To connect explicitly use:
 
         :NreplSession  nrepl://<host>:<port>
 
-To disconnect you also don't have to do something special - just delete the buffer.
+To disconnect you also don't have to do something special - just delete the
+buffer.
 
 COMMANDS
 
 :[range]NreplEval [<expr>]
 
-Evals current line, range or supplied expression. Automatically connects to local lein repl if necessary. It is smart enough to recognize :%NreplEval and issues nREPL load-file operation so that all functions have file name and line numbers associated.
+Evals current line, range or supplied expression. Automatically connects to
+local lein repl if necessary. It is smart enough to recognize :%NreplEval and
+issues nREPL load-file operation so that all functions have file name and line
+numbers associated.
                         
-Note that it doesn't do any trick to figure and set a namespace for the current buffer before eval - you need to do it yourself. However, there are also good news - you only need to do this once - each buffer has its own session and other buffers don't affect the namespace selected.
+Note that it doesn't do any trick to figure and set a namespace for the
+current buffer before eval - you need to do it yourself. However, there are
+also good news - you only need to do this once - each buffer has its own
+session and other buffers don't affect the namespace selected.
 
 :NreplSession [<url>]
 
@@ -24,11 +33,13 @@ This form:
 
         :NreplSession nrepl://<host>:<port>
 
-connects (if necessary) to a repl server, creates new session and associates it with current buffer.
+connects (if necessary) to a repl server, creates new session and associates
+it with current buffer.
 
         :NreplSession nrepl://<host>:<port>/<session>
 
-associates current buffer with existing session, thus two buffers may share the same session.
+associates current buffer with existing session, thus two buffers may share
+the same session.
 
         :NreplSession
 
@@ -40,11 +51,16 @@ Lists active sessions and associated buffers.
 
 :NreplClearSession
 
-You don't need to use this normally - this command is executed automatically when a buffer is deleted. It just "unlinks" session from the current buffer. All sessions which are not associated with any buffer get garbage collected after this command is executed.
+You don't need to use this normally - this command is executed automatically
+when a buffer is deleted. It just "unlinks" session from the current buffer.
+All sessions which are not associated with any buffer get garbage collected
+after this command is executed.
 
 MAPPINGS
 
-I haven't provided any default mappings intentionally. It is hard to provide sane mappings which would fit to any workflow. For instance, mine depend on paredit plugin I use with clojure. I have the following in my .vimrc:
+I haven't provided any default mappings intentionally. It is hard to provide
+sane mappings which would fit to any workflow. For instance, mine depend on
+paredit plugin I use with clojure. I have the following in my .vimrc:
 
 " Evals current top level form with help of paredit's [[
 nmap <silent> ;e [[va(:call NreplEval(@*)<CR>
