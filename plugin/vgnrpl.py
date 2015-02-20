@@ -83,32 +83,30 @@ def find_bufffer():
         if our_buffer(b):
             return b
 
-def output_data(data):
+def output_data(data, target=sys.stdout):
     b = find_bufffer()
     if b:
         b.append(data.split('\n'))
     else:
-        print data
+        print >>sys.stderr, data
 
-def scroll_to_end():
-    for w in vim.windows:
-        if our_buffer(w.buffer):
-            vim.command(str(w.buffer.number) + 'wincmd w')
-            vim.command('normal G')
-            vim.command('wincmd p')
+def scroll_to_end(buf):
+    vim.command(str(buf.number) + 'wincmd w')
+    vim.command('normal G')
+    vim.command('wincmd p')
 
 def response_completed():
-    b = find_bufffer()
-    if b:
-        b.append(';' + 15 * '=')
-    scroll_to_end()
+    buf = find_bufffer()
+    if buf:
+        buf.append(';' + 15 * '=')
+        scroll_to_end(buf)
 
 def print_response(response):
     for msg in response:
         if 'out' in msg:
             output_data(msg['out'])
         if 'err' in msg:
-            print >>sys.stderr, msg['err']
+            output_data(msg['err'], sys.stderr)
         if 'value' in msg:
             output_data(msg['value'])
     response_completed()
