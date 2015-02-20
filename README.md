@@ -11,4 +11,4 @@ I would recommend Pathogen to manage your plugins. With Pathogen installation lo
     cd ~/.vim/bundle
     github clone https://github.com/shashurup/vim-gains-nrepl.git
 
-That is it. You also need Vim with Python support to use this.
+That is it. You also need Vim => 7.4 with Python support to use this.
