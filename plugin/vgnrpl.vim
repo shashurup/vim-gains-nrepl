@@ -54,7 +54,15 @@ vgnrpl.eval(vim.eval('a:code'), int(vim.eval('a:firstline')), int(vim.eval('a:la
 EOF
 endfunction
 
+function! NreplCreateOutput(cmd)
+  execute a:cmd . ' vgnrpl-output.clj'
+  setlocal buftype=nofile
+  setlocal noswapfile
+endfunction
+
 command! -nargs=? NreplSession call NreplSession(<q-args>)
 command! NreplListSessions call NreplListSessions()
 command! -nargs=? NreplClearSession call NreplClearSession(<q-args>)
 command! -nargs=? -range NreplEval <line1>,<line2>call NreplEval(<q-args>)
+command! NreplCreateOutput call NreplCreateOutput('new')
+command! NreplCreateOutputV call NreplCreateOutput('vnew')
