@@ -88,10 +88,15 @@ def find_our_window():
         if is_our_buffer(w.buffer):
             return w.number
 
+def remove_trailing_new_line(subject):
+    if subject and subject[-1] == '\n':
+        return subject[:-1]
+    return subject
+
 def output_data(data, target=sys.stdout):
     b = find_our_bufffer()
     if b:
-        b.append(data.split('\n'))
+        b.append(remove_trailing_new_line(data).split('\n'))
     else:
         print >>target, data
 
