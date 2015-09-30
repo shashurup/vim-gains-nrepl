@@ -144,12 +144,12 @@ def clone_session(connection, session):
 def close_session(connection, session):
     return send(connection, {'op': 'close', 'session': session})
 
-def eval(connection, code, session = None):
+def eval(connection, code, session=None, path=None, line=None):
     request = {'op': 'eval', 'code': code}
-    _merge_optional(request, {'session': session})
+    _merge_optional(request, {'session': session, 'file': path, 'line': line})
     return send(connection, request)
 
-def load_file(connection, content, path = None, name = None, session = None):
+def load_file(connection, content, path=None, name=None, session=None):
     request = {'op': 'load-file', 'file': content}
     _merge_optional(request, {'session': session, 'file-path': path, 'file-name': name})
     return send(connection, request)

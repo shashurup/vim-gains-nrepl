@@ -174,11 +174,6 @@ def eval(code, first, last):
         if code:
             print_response(nrepl.eval(conn, code, session))
         else:
-            if first == 1 and last == len(vim.current.buffer):
-                name = vim.eval("expand('%:t')")
-                path = vim.eval("expand('%:p')")
-                code = '\n'.join(vim.current.buffer[:])
-                print_response(nrepl.load_file(conn, code, path, name, session))
-            else:
-                code = '\n'.join(vim.current.buffer[first - 1:last])
-                print_response(nrepl.eval(conn, code, session))
+            path = vim.eval("expand('%:p')")
+            code = '\n'.join(vim.current.buffer[first - 1:last])
+            print_response(nrepl.eval(conn, code, session, path=path, line=first))
