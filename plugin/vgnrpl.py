@@ -93,7 +93,7 @@ def output_data(data, target=sys.stdout):
     if b:
         b.append(data.split('\n'))
     else:
-        print >>sys.stderr, data
+        print >>target, data
 
 def scroll_to_end(buf):
     win_num = find_our_window()
