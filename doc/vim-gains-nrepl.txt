@@ -79,5 +79,7 @@ paredit plugin I use with clojure. I have the following in my .vimrc:
         nmap <silent> ;m va(:call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
         " and visual selection
         vnoremap <silent> ;m :call NreplEval('(clojure.core/macroexpand '''.@*.')')<CR>
+        " Latest exception stack trace
+        nmap <silent> ;t viwy:call NreplEval('(clojure.repl/pst)')<CR>
 
  vim:tw=78:ts=8:ft=help:norl:
