@@ -21,6 +21,10 @@ COMMANDS
                         necessary. It is smart enough to recognize :%NreplEval
                         and issues nREPL load-file operation so that all
                         functions have file name and line numbers associated.
+
+                        Output goes to the message window unless there is a
+                        buffer with a name vgnrpl-output.clj. In this case all
+                        output is directed into this buffer.
                         
                         Note that it doesn't do any trick to figure and set a
                         namespace for the current buffer before eval - you
@@ -53,6 +57,10 @@ COMMANDS
                         just "unlinks" session from the current buffer. All
                         sessions which are not associated with any buffer get
                         garbage collected after this command is executed.
+
+:NreplCreateOutput      Creates a buffer for nrepl output.
+
+:NreplCreateOutputV     Creates a buffer for nrepl output in a vertical split.
 
 MAPPINGS
 
