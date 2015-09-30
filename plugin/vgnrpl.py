@@ -75,28 +75,35 @@ def close_session(url):
                 nrepl.disconnect(conn)
                 del nrepl_connections[(scheme, host, port)]
 
-def our_buffer(buf):
+def is_our_buffer(buf):
     return buf.name.endswith('vgnrpl-output.clj')
 
-def find_bufffer():
+def find_our_bufffer():
     for b in vim.buffers:
-        if our_buffer(b):
+        if is_our_buffer(b):
             return b
 
+def find_our_window():
+    for w in vim.windows:
+        if is_our_buffer(w.buffer):
+            return w.number
+
 def output_data(data, target=sys.stdout):
-    b = find_bufffer()
+    b = find_our_bufffer()
     if b:
         b.append(data.split('\n'))
     else:
         print >>sys.stderr, data
 
 def scroll_to_end(buf):
-    vim.command(str(buf.number) + 'wincmd w')
-    vim.command('normal G')
-    vim.command('wincmd p')
+    win_num = find_our_window()
+    if win_num:
+        vim.command(str(win_num) + 'wincmd w')
+        vim.command('normal G')
+        vim.command('wincmd p')
 
 def response_completed():
-    buf = find_bufffer()
+    buf = find_our_bufffer()
     if buf:
         buf.append(';' + 15 * '=')
         scroll_to_end(buf)
