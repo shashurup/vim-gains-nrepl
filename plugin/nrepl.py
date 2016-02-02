@@ -124,10 +124,11 @@ def send(connection, request):
     result = []
     while not done:
         msg = _read_datum(connection)
-        result.append(msg)
-        status = msg.get('status')
-        if status:
-            done = 'done' in status or 'error' in status
+        if isinstance(msg, dict):
+            result.append(msg)
+            status = msg.get('status')
+            if status:
+                done = 'done' in status or 'error' in status
     return result
 
 def open_session(connection):
